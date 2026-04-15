@@ -109,10 +109,12 @@ class DXRRenderer:
             # 提取文本内容，去除格式信息
             import re
             text_content = re.sub(r'\\{[^}]+\\}', '', text)
-            # 只显示非中文字符，避免乱码
-            text_content = ''.join([c for c in text_content if ord(c) < 128])
-            if text_content.strip():
-                self.ax.text(x, y, text_content, fontsize=4, color='r')
+            # 清理文本，去除多余的格式字符
+            text_content = re.sub(r'[\\r\\n\\t]+', ' ', text_content)
+            text_content = text_content.strip()
+            if text_content:
+                # 尝试显示文本，设置更小的字体
+                self.ax.text(x, y, text_content, fontsize=3, color='r', ha='center', va='center')
     
     def render_entity(self, entity):
         entity_type = entity['type']
