@@ -27,8 +27,8 @@ class DXRRenderer:
             y2 = (float(props['21']) - self.y_offset) / self.scale_factor
             # 只渲染合理长度的线段
             length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            if 0.1 < length < 50:
-                self.ax.plot([x1, x2], [y1, y2], 'b-', linewidth=0.3)
+            if 0.01 < length < 200:
+                self.ax.plot([x1, x2], [y1, y2], 'b-', linewidth=0.2)
     
     def render_circle(self, entity):
         props = entity['properties']
@@ -37,8 +37,8 @@ class DXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             r = float(props['40']) / self.scale_factor
             # 只渲染合理大小的圆
-            if 0.1 < r < 10:  # 避免渲染过大或过小的圆
-                circle = plt.Circle((x, y), r, fill=False, edgecolor='b', linewidth=0.3)
+            if 0.01 < r < 50:  # 避免渲染过大或过小的圆
+                circle = plt.Circle((x, y), r, fill=False, edgecolor='b', linewidth=0.2)
                 self.ax.add_patch(circle)
     
     def render_arc(self, entity):
@@ -48,7 +48,7 @@ class DXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             r = float(props['40']) / self.scale_factor
             # 只渲染合理大小的圆弧
-            if 0.1 < r < 10:
+            if 0.01 < r < 50:
                 start_angle = float(props['50'])
                 end_angle = float(props['51'])
                 
@@ -65,7 +65,7 @@ class DXRRenderer:
                 x_arc = x + r * np.cos(theta)
                 y_arc = y + r * np.sin(theta)
                 
-                self.ax.plot(x_arc, y_arc, 'b-', linewidth=0.3)
+                self.ax.plot(x_arc, y_arc, 'b-', linewidth=0.2)
     
     def render_ellipse(self, entity):
         props = entity['properties']
@@ -77,7 +77,7 @@ class DXRRenderer:
             major_y = -float(props['21']) / self.scale_factor  # 翻转Y轴
             major_length = np.sqrt(major_x**2 + major_y**2)
             # 只渲染合理大小的椭圆
-            if 0.1 < major_length < 10:
+            if 0.01 < major_length < 50:
                 # 椭圆的偏心率
                 ratio = float(props['40'])
                 minor_length = major_length * ratio
@@ -90,7 +90,7 @@ class DXRRenderer:
                 x_ellipse = x + major_length * np.cos(theta) * np.cos(angle) - minor_length * np.sin(theta) * np.sin(angle)
                 y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
                 
-                self.ax.plot(x_ellipse, y_ellipse, 'b-', linewidth=0.3)
+                self.ax.plot(x_ellipse, y_ellipse, 'b-', linewidth=0.2)
     
     def render_lwpolyline(self, entity):
         props = entity['properties']
