@@ -112,10 +112,11 @@ class DXRRenderer:
         self.ax.relim()
         self.ax.autoscale_view()
         
-        # 保存为图片
+        # 保存为图片和矢量图
         plt.savefig('dxf_render.png', dpi=300, bbox_inches='tight')
+        plt.savefig('dxf_render.svg', format='svg', bbox_inches='tight')
         plt.close()
-        print("图形已渲染并保存为 dxf_render.png")
+        print("图形已渲染并保存为 dxf_render.png 和 dxf_render.svg")
 
 if __name__ == "__main__":
     import sys
