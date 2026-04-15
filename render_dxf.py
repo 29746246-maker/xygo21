@@ -74,7 +74,7 @@ class DXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             # 计算椭圆的长轴向量
             major_x = float(props['11']) / self.scale_factor
-            major_y = -float(props['21']) / self.scale_factor  # 翻转Y轴
+            major_y = float(props['21']) / self.scale_factor  # 不翻转长轴
             major_length = np.sqrt(major_x**2 + major_y**2)
             # 只渲染合理大小的椭圆
             if 0.01 < major_length < 50:
@@ -88,7 +88,7 @@ class DXRRenderer:
                 # 生成椭圆点
                 theta = np.linspace(0, 2*np.pi, 100)
                 x_ellipse = x + major_length * np.cos(theta) * np.cos(angle) - minor_length * np.sin(theta) * np.sin(angle)
-                y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
+                y_ellipse = y - (major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle))  # 翻转Y轴
                 
                 self.ax.plot(x_ellipse, y_ellipse, 'b-', linewidth=0.2)
     
