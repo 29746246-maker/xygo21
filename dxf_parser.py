@@ -5,28 +5,52 @@ class DXFParser:
         self.layers = []
     
     def parse(self, file_path):
-        with open(file_path, 'r') as f:
-            lines = [line.strip() for line in f if line.strip()]
-        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            with open(file_path, 'r', encoding='gbk', errors='ignore') as f:
+                lines = f.readlines()
+
         i = 0
         current_section = None
         current_entity = None
         current_layer = None
-        
+
         while i < len(lines):
             if i + 1 >= len(lines):
                 break
-            
-            code = lines[i]
-            value = lines[i + 1]
-            
+
+            code = lines[i].strip()
+            if not code:
+                i += 1
+                continue
+
+            value = lines[i + 1].strip()
+            if not value:
+                i += 2
+                continue
+
             if code == '0':
                 if value == 'SECTION':
                     i += 2
-                    section_code = lines[i]
-                    section_name = lines[i + 1]
-                    current_section = section_name
-                    i += 2
+                    # 查找 section 名称
+                    while i < len(lines):
+                        if i + 1 >= len(lines):
+                            break
+                        sec_code = lines[i].strip()
+                        if not sec_code:
+                            i += 1
+                            continue
+                        sec_value = lines[i + 1].strip()
+                        if not sec_value:
+                            i += 2
+                            continue
+                        if sec_code == '2':
+                            current_section = sec_value
+                            i += 2
+                            break
+                        i += 2
                 elif value == 'ENDSEC':
                     current_section = None
                     i += 2
@@ -64,18 +88,24 @@ class DXFParser:
                         header_key = value
                         i += 2
                         if i < len(lines):
-                            header_value_code = lines[i]
-                            header_value = lines[i + 1]
+                            header_value_code = lines[i].strip()
+                            if not header_value_code:
+                                i += 1
+                                continue
+                            header_value = lines[i + 1].strip()
+                            if not header_value:
+                                i += 2
+                                continue
                             self.header[header_key] = header_value
                             i += 2
                         continue
                 i += 2
-            
-            if current_entity and (i >= len(lines) or lines[i] == '0'):
+
+            if current_entity and (i >= len(lines) or (i < len(lines) and lines[i].strip() == '0')):
                 self.entities.append(current_entity)
                 current_entity = None
-            
-            if current_layer and (i >= len(lines) or (lines[i] == '0' and lines[i + 1] in ['LAYER', 'ENDTAB'])):
+
+            if current_layer and (i >= len(lines) or (i < len(lines) and lines[i].strip() == '0' and i + 1 < len(lines) and lines[i + 1].strip() in ['LAYER', 'ENDTAB'])):
                 self.layers.append(current_layer)
                 current_layer = None
     
@@ -98,6 +128,11 @@ class DXFParser:
         print("========================")
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
+    else:
+        file_path = 'test.dxf'
     parser = DXFParser()
-    parser.parse('test.dxf')
+    parser.parse(file_path)
     parser.print_summary()
