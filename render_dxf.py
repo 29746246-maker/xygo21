@@ -148,8 +148,22 @@ class DXRRenderer:
             self.x_offset = (min(all_x) + max(all_x)) / 2
             self.y_offset = (min(all_y) + max(all_y)) / 2
         
+        # 按Z轴坐标排序实体，实现深度遮蔽
+        def get_entity_z(entity):
+            props = entity['properties']
+            # 尝试获取Z轴坐标，默认值为0
+            if '30' in props:
+                return float(props['30'])
+            elif '31' in props:
+                return float(props['31'])
+            else:
+                return 0
+        
+        # 按Z值从大到小排序（先渲染远处的，再渲染近处的）
+        sorted_entities = sorted(entities, key=get_entity_z, reverse=True)
+        
         # 渲染所有实体
-        for entity in entities:
+        for entity in sorted_entities:
             self.render_entity(entity)
         
         # 自动调整坐标轴范围
