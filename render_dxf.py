@@ -74,7 +74,7 @@ class DXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             # 计算椭圆的长轴向量
             major_x = float(props['11']) / self.scale_factor
-            major_y = float(props['21']) / self.scale_factor
+            major_y = -float(props['21']) / self.scale_factor  # 翻转Y轴
             major_length = np.sqrt(major_x**2 + major_y**2)
             # 只渲染合理大小的椭圆
             if 0.1 < major_length < 10:
