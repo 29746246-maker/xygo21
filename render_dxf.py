@@ -72,9 +72,9 @@ class DXRRenderer:
         if '10' in props and '20' in props and '11' in props and '21' in props and '40' in props:
             x = (float(props['10']) - self.x_offset) / self.scale_factor
             y = (float(props['20']) - self.y_offset) / self.scale_factor
-            # 计算椭圆的长轴向量
+            # 计算椭圆的长轴向量（直接翻转Y轴）
             major_x = float(props['11']) / self.scale_factor
-            major_y = float(props['21']) / self.scale_factor  # 不翻转长轴
+            major_y = -float(props['21']) / self.scale_factor  # 直接翻转长轴Y分量
             major_length = np.sqrt(major_x**2 + major_y**2)
             # 只渲染合理大小的椭圆
             if 0.01 < major_length < 50:
@@ -85,10 +85,10 @@ class DXRRenderer:
                 # 计算椭圆的角度
                 angle = np.arctan2(major_y, major_x)
                 
-                # 生成椭圆点
+                # 生成椭圆点（正常计算，不需要再次翻转）
                 theta = np.linspace(0, 2*np.pi, 100)
                 x_ellipse = x + major_length * np.cos(theta) * np.cos(angle) - minor_length * np.sin(theta) * np.sin(angle)
-                y_ellipse = y - (major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle))  # 翻转Y轴
+                y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
                 
                 self.ax.plot(x_ellipse, y_ellipse, 'b-', linewidth=0.2)
     
