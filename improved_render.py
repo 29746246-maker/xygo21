@@ -1,0 +1,220 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from dxf_parser import DXFParser
+import re
+
+# 设置中文支持
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei', 'SimHei', 'Arial Unicode MS']
+plt.rcParams['axes.unicode_minus'] = False
+
+class ImprovedDXRRenderer:
+    def __init__(self):
+        self.fig, self.ax = plt.subplots(figsize=(20, 20))
+        self.ax.set_aspect('equal')
+        self.ax.grid(True, linestyle='--', alpha=0.5)
+        self.ax.set_title('DXF File Rendering')
+        self.scale_factor = 5000
+        self.x_offset = 0
+        self.y_offset = 0
+    
+    def get_entity_color(self, entity):
+        props = entity['properties']
+        color_code = props.get('62')
+        if color_code:
+            color_code = int(color_code)
+            # AutoCAD颜色映射
+            color_map = {
+                1: 'red',
+                2: 'yellow',
+                3: 'green',
+                4: 'cyan',
+                5: 'blue',
+                6: 'magenta',
+                7: 'black',
+                8: 'darkgray',
+                9: 'lightgray',
+                256: 'blue',  # ByLayer default
+            }
+            return color_map.get(color_code, 'blue')
+        return 'blue'
+    
+    def render_line(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '11' in props and '21' in props:
+            x1 = (float(props['10']) - self.x_offset) / self.scale_factor
+            y1 = (float(props['20']) - self.y_offset) / self.scale_factor
+            x2 = (float(props['11']) - self.x_offset) / self.scale_factor
+            y2 = (float(props['21']) - self.y_offset) / self.scale_factor
+            
+            length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+            if 0.01 < length < 200:
+                color = self.get_entity_color(entity)
+                self.ax.plot([x1, x2], [y1, y2], color=color, linewidth=0.3)
+    
+    def render_circle(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '40' in props:
+            x = (float(props['10']) - self.x_offset) / self.scale_factor
+            y = (float(props['20']) - self.y_offset) / self.scale_factor
+            r = float(props['40']) / self.scale_factor
+            
+            if 0.01 < r < 50:
+                color = self.get_entity_color(entity)
+                circle = plt.Circle((x, y), r, fill=False, edgecolor=color, linewidth=0.3)
+                self.ax.add_patch(circle)
+    
+    def render_arc(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '40' in props and '50' in props and '51' in props:
+            x = (float(props['10']) - self.x_offset) / self.scale_factor
+            y = (float(props['20']) - self.y_offset) / self.scale_factor
+            r = float(props['40']) / self.scale_factor
+            
+            if 0.01 < r < 50:
+                start_angle = float(props['50'])
+                end_angle = float(props['51'])
+                
+                start_rad = np.deg2rad(start_angle)
+                end_rad = np.deg2rad(end_angle)
+                
+                if end_rad < start_rad:
+                    end_rad += 2 * np.pi
+                
+                theta = np.linspace(start_rad, end_rad, 100)
+                x_arc = x + r * np.cos(theta)
+                y_arc = y + r * np.sin(theta)
+                
+                color = self.get_entity_color(entity)
+                self.ax.plot(x_arc, y_arc, color=color, linewidth=0.3)
+    
+    def render_ellipse(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '11' in props and '21' in props and '40' in props:
+            x = (float(props['10']) - self.x_offset) / self.scale_factor
+            y = (float(props['20']) - self.y_offset) / self.scale_factor
+            
+            major_x = float(props['11']) / self.scale_factor
+            major_y = float(props['21']) / self.scale_factor
+            major_length = np.sqrt(major_x**2 + major_y**2)
+            
+            if 0.01 < major_length < 50:
+                ratio = float(props['40'])
+                minor_length = major_length * ratio
+                
+                angle = np.arctan2(major_y, major_x)
+                
+                theta = np.linspace(0, 2*np.pi, 100)
+                x_ellipse = x + major_length * np.cos(theta) * np.cos(angle) - minor_length * np.sin(theta) * np.sin(angle)
+                y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
+                
+                color = self.get_entity_color(entity)
+                self.ax.plot(x_ellipse, y_ellipse, color=color, linewidth=0.3)
+    
+    def render_polyline(self, entity, entities):
+        props = entity['properties']
+        if '66' in props and props['66'] == '1':
+            entity_handle = props.get('5')
+            vertices = []
+            collecting_vertices = False
+            
+            for e in entities:
+                e_props = e['properties']
+                if e['type'] == 'VERTEX' and e_props.get('330') == entity_handle:
+                    if '10' in e_props and '20' in e_props:
+                        x = (float(e_props['10']) - self.x_offset) / self.scale_factor
+                        y = (float(e_props['20']) - self.y_offset) / self.scale_factor
+                        vertices.append((x, y))
+                elif e['type'] == 'SEQEND' and e_props.get('330') == entity_handle:
+                    break
+            
+            if len(vertices) >= 2:
+                xs, ys = zip(*vertices)
+                color = self.get_entity_color(entity)
+                self.ax.plot(xs, ys, color=color, linewidth=0.3)
+    
+    def render_text(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '1' in props:
+            x = (float(props['10']) - self.x_offset) / self.scale_factor
+            y = (float(props['20']) - self.y_offset) / self.scale_factor
+            text = props['1']
+            
+            text_content = re.sub(r'\\[fFHhPpQqWwAaCcDdLlOoUuKkXxTtSs]([^;]*;)?', '', text)
+            text_content = re.sub(r'\\{[^}]*\\}', '', text_content)
+            text_content = text_content.replace(';', '').strip()
+            
+            if text_content:
+                self.ax.text(x, y, text_content, fontsize=4, color='red', 
+                            ha='center', va='center', fontfamily='sans-serif')
+    
+    def render_mtext(self, entity):
+        props = entity['properties']
+        if '10' in props and '20' in props and '1' in props:
+            x = (float(props['10']) - self.x_offset) / self.scale_factor
+            y = (float(props['20']) - self.y_offset) / self.scale_factor
+            text = props['1']
+            
+            text_content = re.sub(r'\\f[^;]+;', '', text)
+            text_content = re.sub(r'\\[PpQqWwAaCcDdLlOoUuKkXxTtSs][^;]*;?', '', text_content)
+            text_content = text_content.replace('{', '').replace('}', '').strip()
+            
+            if text_content:
+                self.ax.text(x, y, text_content, fontsize=4, color='red', 
+                            ha='center', va='center', fontfamily='sans-serif')
+    
+    def render_entity(self, entity, all_entities):
+        entity_type = entity['type']
+        if entity_type == 'LINE':
+            self.render_line(entity)
+        elif entity_type == 'CIRCLE':
+            self.render_circle(entity)
+        elif entity_type == 'ARC':
+            self.render_arc(entity)
+        elif entity_type == 'ELLIPSE':
+            self.render_ellipse(entity)
+        elif entity_type == 'POLYLINE':
+            self.render_polyline(entity, all_entities)
+        elif entity_type == 'TEXT':
+            self.render_text(entity)
+        elif entity_type == 'MTEXT':
+            self.render_mtext(entity)
+    
+    def render(self, entities, output_file):
+        all_x = []
+        all_y = []
+        
+        for entity in entities:
+            props = entity['properties']
+            if '10' in props and '20' in props:
+                all_x.append(float(props['10']))
+                all_y.append(float(props['20']))
+            if '11' in props and '21' in props:
+                all_x.append(float(props['11']))
+                all_y.append(float(props['21']))
+        
+        if all_x and all_y:
+            self.x_offset = (min(all_x) + max(all_x)) / 2
+            self.y_offset = (min(all_y) + max(all_y)) / 2
+        
+        for entity in entities:
+            self.render_entity(entity, entities)
+        
+        self.ax.relim()
+        self.ax.autoscale_view()
+        
+        plt.savefig(output_file, dpi=300, bbox_inches='tight')
+        plt.savefig(output_file.replace('.png', '.svg'), format='svg', bbox_inches='tight')
+        plt.close()
+        print(f"图形已渲染并保存为 {output_file} 和 {output_file.replace('.png', '.svg')}")
+
+if __name__ == "__main__":
+    file_path = '/workspace/预作用配件lt2000.dxf'
+    
+    parser = DXFParser()
+    parser.parse(file_path)
+    entities = parser.get_entities()
+    
+    print(f"加载了 {len(entities)} 个实体")
+    
+    renderer = ImprovedDXRRenderer()
+    renderer.render(entities, 'improved_render.png')
