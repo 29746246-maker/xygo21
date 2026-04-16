@@ -44,7 +44,7 @@ class ImprovedDXRRenderer:
             if 0.01 < length < 200:
                 color = self.get_entity_color(entity)
                 # 增加线条宽度以更接近原始图片
-                self.ax.plot([x1, x2], [y1, y2], color=color, linewidth=0.5)
+                self.ax.plot([x1, x2], [y1, y2], color=color, linewidth=0.8)
     
     def render_circle(self, entity):
         props = entity['properties']
@@ -55,7 +55,7 @@ class ImprovedDXRRenderer:
             
             if 0.01 < r < 50:
                 color = self.get_entity_color(entity)
-                circle = plt.Circle((x, y), r, fill=False, edgecolor=color, linewidth=0.5)
+                circle = plt.Circle((x, y), r, fill=False, edgecolor=color, linewidth=0.8)
                 self.ax.add_patch(circle)
     
     def render_arc(self, entity):
@@ -80,7 +80,7 @@ class ImprovedDXRRenderer:
                 y_arc = y + r * np.sin(theta)
                 
                 color = self.get_entity_color(entity)
-                self.ax.plot(x_arc, y_arc, color=color, linewidth=0.5)
+                self.ax.plot(x_arc, y_arc, color=color, linewidth=0.8)
     
     def render_ellipse(self, entity):
         props = entity['properties']
@@ -103,7 +103,7 @@ class ImprovedDXRRenderer:
                 y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
                 
                 color = self.get_entity_color(entity)
-                self.ax.plot(x_ellipse, y_ellipse, color=color, linewidth=0.5)
+                self.ax.plot(x_ellipse, y_ellipse, color=color, linewidth=0.8)
     
     def render_polyline(self, entity, entities):
         props = entity['properties']
@@ -125,7 +125,7 @@ class ImprovedDXRRenderer:
             if len(vertices) >= 2:
                 xs, ys = zip(*vertices)
                 color = self.get_entity_color(entity)
-                self.ax.plot(xs, ys, color=color, linewidth=0.5)
+                self.ax.plot(xs, ys, color=color, linewidth=0.8)
     
     def render_lwpolyline(self, entity):
         props = entity['properties']
@@ -155,7 +155,7 @@ class ImprovedDXRRenderer:
                 if len(vertices) >= 2:
                     xs, ys = zip(*vertices)
                     color = self.get_entity_color(entity)
-                    self.ax.plot(xs, ys, color=color, linewidth=0.5)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.8)
     
     def render_spline(self, entity):
         props = entity['properties']
@@ -186,7 +186,7 @@ class ImprovedDXRRenderer:
                     # 绘制样条曲线（简化为折线）
                     xs, ys = zip(*control_points)
                     color = self.get_entity_color(entity)
-                    self.ax.plot(xs, ys, color=color, linewidth=0.5)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.8)
     
     def render_text(self, entity):
         props = entity['properties']
