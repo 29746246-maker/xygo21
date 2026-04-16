@@ -2,18 +2,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 from dxf_parser import DXFParser
 import re
+from matplotlib.font_manager import FontProperties
 
 # 设置中文支持
-plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei', 'SimHei', 'Arial Unicode MS']
+plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei', 'WenQuanYi Zen Hei', 'SimHei', 'Arial Unicode MS']
 plt.rcParams['axes.unicode_minus'] = False
+
+# 创建字体属性对象，直接指定字体文件路径
+chinese_font = FontProperties(fname='/usr/share/fonts/truetype/wqy/wqy-microhei.ttc')
 
 class ImprovedDXRRenderer:
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(20, 20))
+        self.fig, self.ax = plt.subplots(figsize=(24, 18))  # 调整画布大小以更接近原始图片
         self.ax.set_aspect('equal')
-        self.ax.grid(True, linestyle='--', alpha=0.5)
+        # 添加网格背景，更接近原始图片的效果
+        self.ax.grid(True, linestyle='-', alpha=0.3, color='gray')
+        self.ax.set_facecolor('#f0f0f0')  # 设置背景色
         self.ax.set_title('DXF File Rendering')
-        self.scale_factor = 5000
+        self.scale_factor = 4000  # 调整缩放因子
         self.x_offset = 0
         self.y_offset = 0
     
@@ -49,7 +55,8 @@ class ImprovedDXRRenderer:
             length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
             if 0.01 < length < 200:
                 color = self.get_entity_color(entity)
-                self.ax.plot([x1, x2], [y1, y2], color=color, linewidth=0.3)
+                # 增加线条宽度以更接近原始图片
+                self.ax.plot([x1, x2], [y1, y2], color=color, linewidth=0.5)
     
     def render_circle(self, entity):
         props = entity['properties']
@@ -60,7 +67,7 @@ class ImprovedDXRRenderer:
             
             if 0.01 < r < 50:
                 color = self.get_entity_color(entity)
-                circle = plt.Circle((x, y), r, fill=False, edgecolor=color, linewidth=0.3)
+                circle = plt.Circle((x, y), r, fill=False, edgecolor=color, linewidth=0.5)
                 self.ax.add_patch(circle)
     
     def render_arc(self, entity):
@@ -85,7 +92,7 @@ class ImprovedDXRRenderer:
                 y_arc = y + r * np.sin(theta)
                 
                 color = self.get_entity_color(entity)
-                self.ax.plot(x_arc, y_arc, color=color, linewidth=0.3)
+                self.ax.plot(x_arc, y_arc, color=color, linewidth=0.5)
     
     def render_ellipse(self, entity):
         props = entity['properties']
@@ -108,7 +115,7 @@ class ImprovedDXRRenderer:
                 y_ellipse = y + major_length * np.cos(theta) * np.sin(angle) + minor_length * np.sin(theta) * np.cos(angle)
                 
                 color = self.get_entity_color(entity)
-                self.ax.plot(x_ellipse, y_ellipse, color=color, linewidth=0.3)
+                self.ax.plot(x_ellipse, y_ellipse, color=color, linewidth=0.5)
     
     def render_polyline(self, entity, entities):
         props = entity['properties']
@@ -130,7 +137,7 @@ class ImprovedDXRRenderer:
             if len(vertices) >= 2:
                 xs, ys = zip(*vertices)
                 color = self.get_entity_color(entity)
-                self.ax.plot(xs, ys, color=color, linewidth=0.3)
+                self.ax.plot(xs, ys, color=color, linewidth=0.5)
     
     def render_lwpolyline(self, entity):
         props = entity['properties']
@@ -160,7 +167,7 @@ class ImprovedDXRRenderer:
                 if len(vertices) >= 2:
                     xs, ys = zip(*vertices)
                     color = self.get_entity_color(entity)
-                    self.ax.plot(xs, ys, color=color, linewidth=0.3)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.5)
     
     def render_spline(self, entity):
         props = entity['properties']
@@ -191,7 +198,7 @@ class ImprovedDXRRenderer:
                     # 绘制样条曲线（简化为折线）
                     xs, ys = zip(*control_points)
                     color = self.get_entity_color(entity)
-                    self.ax.plot(xs, ys, color=color, linewidth=0.3)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.5)
     
     def render_text(self, entity):
         props = entity['properties']
@@ -200,13 +207,15 @@ class ImprovedDXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             text = props['1']
             
+            # 提取文字内容
             text_content = re.sub(r'\\[fFHhPpQqWwAaCcDdLlOoUuKkXxTtSs]([^;]*;)?', '', text)
             text_content = re.sub(r'\\{[^}]*\\}', '', text_content)
             text_content = text_content.replace(';', '').strip()
             
             if text_content:
-                self.ax.text(x, y, text_content, fontsize=4, color='red', 
-                            ha='center', va='center', fontfamily='sans-serif')
+                # 使用字体属性对象渲染中文文本
+                self.ax.text(x, y, text_content, fontsize=6, color='red', 
+                            ha='center', va='center', fontproperties=chinese_font)
     
     def render_mtext(self, entity):
         props = entity['properties']
@@ -215,13 +224,15 @@ class ImprovedDXRRenderer:
             y = (float(props['20']) - self.y_offset) / self.scale_factor
             text = props['1']
             
+            # 提取文字内容
             text_content = re.sub(r'\\f[^;]+;', '', text)
             text_content = re.sub(r'\\[PpQqWwAaCcDdLlOoUuKkXxTtSs][^;]*;?', '', text_content)
             text_content = text_content.replace('{', '').replace('}', '').strip()
             
             if text_content:
-                self.ax.text(x, y, text_content, fontsize=4, color='red', 
-                            ha='center', va='center', fontfamily='sans-serif')
+                # 使用字体属性对象渲染中文文本
+                self.ax.text(x, y, text_content, fontsize=6, color='red', 
+                            ha='center', va='center', fontproperties=chinese_font)
     
     def render_entity(self, entity, all_entities):
         entity_type = entity['type']
