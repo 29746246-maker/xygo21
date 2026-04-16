@@ -305,6 +305,9 @@ class ImprovedDXRRenderer:
         self.ax.relim()
         self.ax.autoscale_view()
         
+        # 确保保持等比例显示
+        self.ax.set_aspect('equal', adjustable='datalim')
+        
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.savefig(output_file.replace('.png', '.svg'), format='svg', bbox_inches='tight')
         plt.close()
