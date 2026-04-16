@@ -132,6 +132,67 @@ class ImprovedDXRRenderer:
                 color = self.get_entity_color(entity)
                 self.ax.plot(xs, ys, color=color, linewidth=0.3)
     
+    def render_lwpolyline(self, entity):
+        props = entity['properties']
+        if '90' in props and '10' in props and '20' in props:
+            vertex_count = int(props['90'])
+            if vertex_count >= 2:
+                # 收集所有顶点
+                vertices = []
+                
+                # 处理坐标数据
+                x_coords = props['10']
+                y_coords = props['20']
+                
+                # 确保坐标是列表形式
+                if not isinstance(x_coords, list):
+                    x_coords = [x_coords]
+                if not isinstance(y_coords, list):
+                    y_coords = [y_coords]
+                
+                # 确保坐标数量匹配
+                min_len = min(len(x_coords), len(y_coords))
+                for j in range(min_len):
+                    x = (float(x_coords[j]) - self.x_offset) / self.scale_factor
+                    y = (float(y_coords[j]) - self.y_offset) / self.scale_factor
+                    vertices.append((x, y))
+                
+                if len(vertices) >= 2:
+                    xs, ys = zip(*vertices)
+                    color = self.get_entity_color(entity)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.3)
+    
+    def render_spline(self, entity):
+        props = entity['properties']
+        if '72' in props and '10' in props and '20' in props:
+            control_point_count = int(props['72'])
+            if control_point_count >= 2:
+                # 收集控制点
+                control_points = []
+                
+                # 处理坐标数据
+                x_coords = props['10']
+                y_coords = props['20']
+                
+                # 确保坐标是列表形式
+                if not isinstance(x_coords, list):
+                    x_coords = [x_coords]
+                if not isinstance(y_coords, list):
+                    y_coords = [y_coords]
+                
+                # 确保坐标数量匹配
+                min_len = min(len(x_coords), len(y_coords))
+                for j in range(min_len):
+                    x = (float(x_coords[j]) - self.x_offset) / self.scale_factor
+                    y = (float(y_coords[j]) - self.y_offset) / self.scale_factor
+                    control_points.append((x, y))
+                
+                if len(control_points) >= 2:
+                    # 绘制样条曲线（简化为折线）
+                    xs, ys = zip(*control_points)
+                    color = self.get_entity_color(entity)
+                    self.ax.plot(xs, ys, color=color, linewidth=0.3)
+    
     def render_text(self, entity):
         props = entity['properties']
         if '10' in props and '20' in props and '1' in props:
@@ -174,6 +235,10 @@ class ImprovedDXRRenderer:
             self.render_ellipse(entity)
         elif entity_type == 'POLYLINE':
             self.render_polyline(entity, all_entities)
+        elif entity_type == 'LWPOLYLINE':
+            self.render_lwpolyline(entity)
+        elif entity_type == 'SPLINE':
+            self.render_spline(entity)
         elif entity_type == 'TEXT':
             self.render_text(entity)
         elif entity_type == 'MTEXT':
@@ -186,11 +251,38 @@ class ImprovedDXRRenderer:
         for entity in entities:
             props = entity['properties']
             if '10' in props and '20' in props:
-                all_x.append(float(props['10']))
-                all_y.append(float(props['20']))
+                # 处理坐标数据，无论是单个值还是列表
+                x_value = props['10']
+                y_value = props['20']
+                
+                if isinstance(x_value, list):
+                    for x in x_value:
+                        all_x.append(float(x))
+                else:
+                    all_x.append(float(x_value))
+                
+                if isinstance(y_value, list):
+                    for y in y_value:
+                        all_y.append(float(y))
+                else:
+                    all_y.append(float(y_value))
+            
             if '11' in props and '21' in props:
-                all_x.append(float(props['11']))
-                all_y.append(float(props['21']))
+                # 处理第二个点的坐标（如果有）
+                x1_value = props['11']
+                y1_value = props['21']
+                
+                if isinstance(x1_value, list):
+                    for x in x1_value:
+                        all_x.append(float(x))
+                else:
+                    all_x.append(float(x1_value))
+                
+                if isinstance(y1_value, list):
+                    for y in y1_value:
+                        all_y.append(float(y))
+                else:
+                    all_y.append(float(y1_value))
         
         if all_x and all_y:
             self.x_offset = (min(all_x) + max(all_x)) / 2

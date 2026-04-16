@@ -77,7 +77,14 @@ class DXFParser:
                         i += 2
             else:
                 if current_entity:
-                    current_entity['properties'][code] = value
+                    # 处理 LWPOLYLINE 和 SPLINE 的多个顶点/控制点
+                    if code in ['10', '20', '30'] and code in current_entity['properties']:
+                        # 如果是重复的坐标代码，将其转换为列表
+                        if not isinstance(current_entity['properties'][code], list):
+                            current_entity['properties'][code] = [current_entity['properties'][code]]
+                        current_entity['properties'][code].append(value)
+                    else:
+                        current_entity['properties'][code] = value
                 elif current_layer:
                     if code == '2':
                         current_layer['name'] = value
