@@ -5,11 +5,8 @@ import re
 from matplotlib.font_manager import FontProperties
 
 # 设置中文支持
-plt.rcParams['font.sans-serif'] = ['WenQuanYi Micro Hei', 'WenQuanYi Zen Hei', 'SimHei', 'Arial Unicode MS']
+plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial']
 plt.rcParams['axes.unicode_minus'] = False
-
-# 创建字体属性对象，直接指定字体文件路径
-chinese_font = FontProperties(fname='/usr/share/fonts/truetype/wqy/wqy-microhei.ttc')
 
 class ImprovedDXRRenderer:
     def __init__(self):
@@ -18,7 +15,7 @@ class ImprovedDXRRenderer:
         # 添加网格背景，更接近原始图片的效果
         self.ax.grid(True, linestyle='-', alpha=0.2, color='white')
         self.ax.set_facecolor('#1a1a2e')  # 设置背景色为深蓝色
-        self.ax.set_title('预作用配件LT2000', fontproperties=chinese_font, color='white')
+        self.ax.set_title('Pre-action Fitting LT2000', color='white')
         self.scale_factor = 4000  # 调整缩放因子
         self.x_offset = 0
         self.y_offset = 0
@@ -201,10 +198,10 @@ class ImprovedDXRRenderer:
             text_content = text_content.replace(';', '').strip()
             
             if text_content:
-                # 使用字体属性对象渲染中文文本，颜色改为绿色以匹配原始图片
+                # 使用默认字体渲染文本，颜色改为绿色以匹配原始图片
                 self.ax.text(x, y, text_content, fontsize=6, color='green', 
-                            ha='center', va='center', fontproperties=chinese_font)
-    
+                            ha='center', va='center')
+
     def render_mtext(self, entity):
         props = entity['properties']
         if '10' in props and '20' in props and '1' in props:
@@ -218,9 +215,9 @@ class ImprovedDXRRenderer:
             text_content = text_content.replace('{', '').replace('}', '').strip()
             
             if text_content:
-                # 使用字体属性对象渲染中文文本，颜色改为绿色以匹配原始图片
+                # 使用默认字体渲染文本，颜色改为绿色以匹配原始图片
                 self.ax.text(x, y, text_content, fontsize=6, color='green', 
-                            ha='center', va='center', fontproperties=chinese_font)
+                            ha='center', va='center')
     
     def render_entity(self, entity, all_entities):
         entity_type = entity['type']
