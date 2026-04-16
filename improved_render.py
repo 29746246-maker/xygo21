@@ -16,9 +16,9 @@ class ImprovedDXRRenderer:
         self.fig, self.ax = plt.subplots(figsize=(24, 18))  # 调整画布大小以更接近原始图片
         self.ax.set_aspect('equal')
         # 添加网格背景，更接近原始图片的效果
-        self.ax.grid(True, linestyle='-', alpha=0.3, color='gray')
-        self.ax.set_facecolor('#f0f0f0')  # 设置背景色
-        self.ax.set_title('DXF File Rendering')
+        self.ax.grid(True, linestyle='-', alpha=0.2, color='white')
+        self.ax.set_facecolor('#1a1a2e')  # 设置背景色为深蓝色
+        self.ax.set_title('预作用配件LT2000', fontproperties=chinese_font, color='white')
         self.scale_factor = 4000  # 调整缩放因子
         self.x_offset = 0
         self.y_offset = 0
@@ -28,21 +28,9 @@ class ImprovedDXRRenderer:
         color_code = props.get('62')
         if color_code:
             color_code = int(color_code)
-            # AutoCAD颜色映射
-            color_map = {
-                1: 'red',
-                2: 'yellow',
-                3: 'green',
-                4: 'cyan',
-                5: 'blue',
-                6: 'magenta',
-                7: 'black',
-                8: 'darkgray',
-                9: 'lightgray',
-                256: 'blue',  # ByLayer default
-            }
-            return color_map.get(color_code, 'blue')
-        return 'blue'
+            # AutoCAD颜色映射 - 统一改为白色以匹配原始图片
+            return 'white'
+        return 'white'
     
     def render_line(self, entity):
         props = entity['properties']
@@ -213,8 +201,8 @@ class ImprovedDXRRenderer:
             text_content = text_content.replace(';', '').strip()
             
             if text_content:
-                # 使用字体属性对象渲染中文文本
-                self.ax.text(x, y, text_content, fontsize=6, color='red', 
+                # 使用字体属性对象渲染中文文本，颜色改为绿色以匹配原始图片
+                self.ax.text(x, y, text_content, fontsize=6, color='green', 
                             ha='center', va='center', fontproperties=chinese_font)
     
     def render_mtext(self, entity):
@@ -230,8 +218,8 @@ class ImprovedDXRRenderer:
             text_content = text_content.replace('{', '').replace('}', '').strip()
             
             if text_content:
-                # 使用字体属性对象渲染中文文本
-                self.ax.text(x, y, text_content, fontsize=6, color='red', 
+                # 使用字体属性对象渲染中文文本，颜色改为绿色以匹配原始图片
+                self.ax.text(x, y, text_content, fontsize=6, color='green', 
                             ha='center', va='center', fontproperties=chinese_font)
     
     def render_entity(self, entity, all_entities):
@@ -307,6 +295,16 @@ class ImprovedDXRRenderer:
         
         # 确保保持等比例显示
         self.ax.set_aspect('equal', adjustable='datalim')
+        
+        # 设置坐标轴颜色为白色
+        self.ax.spines['bottom'].set_color('white')
+        self.ax.spines['top'].set_color('white')
+        self.ax.spines['left'].set_color('white')
+        self.ax.spines['right'].set_color('white')
+        self.ax.xaxis.label.set_color('white')
+        self.ax.yaxis.label.set_color('white')
+        self.ax.tick_params(axis='x', colors='white')
+        self.ax.tick_params(axis='y', colors='white')
         
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         plt.savefig(output_file.replace('.png', '.svg'), format='svg', bbox_inches='tight')
