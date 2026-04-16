@@ -4,7 +4,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-mono text-white mb-6">技术阀门系统图纸</h1>
         <div className="relative overflow-auto">
-          <svg width="1200" height="800" className="border border-gray-700">
+          <svg width="1200" height="800" viewBox="0 0 1200 800" className="border border-gray-700">
             {/* 网格背景 */}
             <defs>
               <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -17,7 +17,6 @@ export default function Home() {
             <rect width="100%" height="100%" fill="url(#grid)"/>
             <rect width="100%" height="100%" fill="url(#grid-large)"/>
             
-            {/* 主阀门系统 */}
             {/* 左侧阀门组件 */}
             <g transform="translate(100, 100)">
               <circle cx="50" cy="50" r="40" stroke="white" strokeWidth="2" fill="none"/>
@@ -25,6 +24,7 @@ export default function Home() {
               <rect x="45" y="0" width="10" height="10" stroke="white" strokeWidth="2" fill="none"/>
               <rect x="45" y="90" width="10" height="10" stroke="white" strokeWidth="2" fill="none"/>
               <circle cx="50" cy="50" r="10" stroke="white" strokeWidth="2" fill="none"/>
+              <path d="M 50 10 L 50 90" stroke="white" strokeWidth="1" fill="none"/>
             </g>
             
             {/* 右侧主阀门 */}
@@ -63,11 +63,13 @@ export default function Home() {
                 <circle cx="0" cy="0" r="15" stroke="white" strokeWidth="2" fill="none"/>
                 <path d="M -15 0 L 15 0" stroke="white" strokeWidth="1"/>
                 <path d="M 0 -15 L 0 15" stroke="white" strokeWidth="1"/>
+                <circle cx="0" cy="0" r="3" stroke="white" strokeWidth="1" fill="white"/>
               </g>
               
               {/* 控制装置 */}
               <rect x="130" y="130" width="40" height="40" stroke="white" strokeWidth="2" fill="none"/>
               <rect x="140" y="140" width="20" height="20" stroke="white" strokeWidth="1" fill="none"/>
+              <circle cx="150" cy="150" r="5" stroke="white" strokeWidth="1" fill="none"/>
             </g>
             
             {/* 连接管道 */}
@@ -162,6 +164,7 @@ export default function Home() {
               ))}
               <circle cx="75" cy="75" r="30" stroke="white" strokeWidth="1" fill="none"/>
               <circle cx="75" cy="75" r="10" stroke="white" strokeWidth="1" fill="none"/>
+              <circle cx="75" cy="75" r="3" stroke="white" strokeWidth="1" fill="white"/>
             </g>
           </svg>
         </div>
